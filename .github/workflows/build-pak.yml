@@ -1,4 +1,4 @@
-name: Build and Push Flatpak
+name: Build and Push Flatpak (TEST)
 
 on:
   push:
