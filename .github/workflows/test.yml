@@ -1,0 +1,34 @@
+name: Build and Push Flatpak (TEST)
+
+on:
+  push:
+    branches:
+      - 'main'
+  workflow_dispatch:
+
+jobs:
+  flatpak:
+    name: "Flatpak"
+    runs-on: ubuntu-22.04
+    container:
+      image: fedora:40
+      options: --privileged
+    steps:
+    - name: Install Deps and Setup environment
+      run: |
+        dnf install -y wget flatpak gtk4-devel gtk4 libadwaita git curl openssl-devel rust cargo xorg-x11-server-Xvfb flatpak-builder python3-aiohttp python3-tenacity python3-gobject
+        flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+        wget https://raw.githubusercontent.com/an-anime-team/flatpak-builds/refs/heads/main/flat-manager-client -O /usr/bin/flat-manager-client
+        chmod +x /usr/bin/flat-manager-client
+        git config --global protocol.file.allow always
+    - uses: actions/checkout@v4
+      with:
+        ref: main
+        submodules: true
+    - uses: flatpak/flatpak-github-actions/flatpak-builder@v6.5
+      name: "Build"
+      with:
+        bundle: moe.launcher.an-anime-game-launcher.flatpak
+        build-bundle: false
+        manifest-path: moe.launcher.an-anime-game-launcher.yml
+        cache-key: flatpak-builder-${{ github.sha }}
